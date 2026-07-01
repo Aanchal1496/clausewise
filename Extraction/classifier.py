@@ -6,12 +6,20 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 # ── Load trained model once at startup ───────────────────────────────────────
 # Get absolute path to the model directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_DIR = os.path.join(BASE_DIR, "bert_clause_model")
+# Load the trained model from Hugging Face
+MODEL_DIR = "Aanchal14/clausewise-bert"
 LABEL_MAP_PATH = os.path.join(BASE_DIR, "label_map.json")
 
-print(f"* Loading trained BERT classifier from {MODEL_DIR}...")
-tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
-model     = AutoModelForSequenceClassification.from_pretrained(MODEL_DIR)
+print("* Downloading/loading trained BERT model from Hugging Face...")
+tokenizer = AutoTokenizer.from_pretrained(
+    MODEL_DIR,
+    trust_remote_code=False
+)
+
+model = AutoModelForSequenceClassification.from_pretrained(
+    MODEL_DIR,
+    trust_remote_code=False
+)
 model.eval()  # inference mode, not training mode
 
 with open(LABEL_MAP_PATH, 'r') as f:
