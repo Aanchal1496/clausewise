@@ -150,7 +150,7 @@ export default function AnalysisPage() {
   setChatMessages(prev => [...prev, { role: 'assistant', text: '...' }]);
 
   try {
-    const response = await fetch('http://localhost:5000/chat', {
+    const response = await fetch('https://clausewise-clone-production.up.railway.app/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
