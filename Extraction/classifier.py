@@ -10,6 +10,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = "Aanchal14/clausewise-bert"
 LABEL_MAP_PATH = os.path.join(BASE_DIR, "label_map.json")
 
+device = torch.device("cpu")
+
 print("* Downloading/loading trained BERT model from Hugging Face...")
 tokenizer = AutoTokenizer.from_pretrained(
     MODEL_DIR,
@@ -19,7 +21,7 @@ tokenizer = AutoTokenizer.from_pretrained(
 model = AutoModelForSequenceClassification.from_pretrained(
     MODEL_DIR,
     trust_remote_code=False
-)
+).to(device)
 model.eval()  # inference mode, not training mode
 
 with open(LABEL_MAP_PATH, 'r') as f:
@@ -67,6 +69,8 @@ def detect_type(text):
         max_length=128,
         padding=True
     )
+
+    inputs = {k: v.to(device) for k, v in inputs.items()}
 
     with torch.no_grad():                        # no gradient needed for inference
         outputs = model(**inputs)
