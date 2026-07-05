@@ -3,7 +3,7 @@ import numpy as np
 from groq import Groq
 from rag_store import embed
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
 _GROQ_AVAILABLE = bool(GROQ_API_KEY)
 
 if _GROQ_AVAILABLE:

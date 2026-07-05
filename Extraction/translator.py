@@ -2,7 +2,7 @@ import traceback
 from groq import Groq
 import os
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
 _GROQ_AVAILABLE = bool(GROQ_API_KEY)
 
 if _GROQ_AVAILABLE:
