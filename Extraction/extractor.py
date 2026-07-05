@@ -32,22 +32,32 @@ def extract_clauses(pdf_input):
     Extracts clauses from either PDF bytes or raw text.
     Returns a list of dictionaries, each representing a clause.
     """
-    import fitz
     import re
 
     # 1. Get raw text from input
     if isinstance(pdf_input, bytes):
         text = None
-        # Try pdfplumber first (more reliable on Railway)
+        # Try pypdf first (pure Python, no system deps)
         try:
-            import pdfplumber
-            with pdfplumber.open(pdf_input) as pdf:
-                text = ''.join(page.extract_text() or '' for page in pdf.pages)
+            import io
+            import pypdf
+            reader = pypdf.PdfReader(io.BytesIO(pdf_input))
+            text = ''.join(page.extract_text() or '' for page in reader.pages)
         except Exception as e:
-            print(f"pdfplumber failed: {e}, trying fitz...")
+            print(f"pypdf failed: {e}")
+
+        # Fallback to pdfplumber
+        if text is None or not text.strip():
+            try:
+                import pdfplumber
+                import io
+                with pdfplumber.open(io.BytesIO(pdf_input)) as pdf:
+                    text = ''.join(page.extract_text() or '' for page in pdf.pages)
+            except Exception as e:
+                print(f"pdfplumber failed: {e}")
 
         # Fallback to PyMuPDF
-        if text is None:
+        if text is None or not text.strip():
             try:
                 import fitz
                 pdf = fitz.open(stream=pdf_input, filetype="pdf")
