@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Link } from 'react-router-dom';
+import { BACKEND_URL } from '../../utils/mockData';
 import { ChevronDown, ChevronUp, Mail, MessageSquare, FileText, Shield, Zap, Users } from 'lucide-react';
 import './HelpPage.css';
 
@@ -76,16 +77,30 @@ export default function HelpPage() {
     setChatMessages(prev => [...prev, { role: 'assistant', text: '...' }]);
 
     try {
-      const response = await fetch('https://clausewise-clone-production.up.railway.app/chat', {
+      const response = await fetch(`${BACKEND_URL}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question: userMessage,
-          clauses: analysisResult?.clauses || [] 
+          clauses: analysisResult?.clauses || []
         })
       });
 
-      const data = await response.json();
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        data = { answer: 'Unexpected response from server.' };
+      }
+
+      if (!response.ok) {
+        setChatMessages(prev => [
+          ...prev.slice(0, -1),
+          { role: 'assistant', text: data.error || data.answer || 'Sorry, something went wrong on the server.' }
+        ]);
+        return;
+      }
 
       setChatMessages(prev => [
         ...prev.slice(0, -1),
