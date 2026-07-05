@@ -5,7 +5,7 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 _GROQ_AVAILABLE = bool(GROQ_API_KEY)
 
 if _GROQ_AVAILABLE:
-    client = Groq(api_key=GROQ_API_KEY, timeout=30)
+    client = Groq(api_key=GROQ_API_KEY, timeout=15)
 else:
     client = None
     print("* WARNING: GROQ_API_KEY not set — skipping AI explanations")
@@ -49,15 +49,15 @@ def translate_clause(clause_text, clause_type, risk_level):
 
 
 def translate_all(clauses):
-    results = []
-    for clause in clauses:
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    def translate_one(clause):
         try:
             explanation = translate_clause(
                 clause.get('full_text', ''),
                 clause.get('type', 'general'),
                 clause.get('risk_level', 'low')
             )
-            # ── Self-healing ──────────────────────────────────────────────────
             try:
                 from rag_healer import is_bad_explanation, heal_explanation
                 if is_bad_explanation(explanation):
@@ -71,6 +71,12 @@ def translate_all(clauses):
                 pass
         except Exception as e:
             explanation = clause.get('plain_english', 'Could not generate explanation.')
+        return {**clause, 'ai_explanation': explanation}
 
-        results.append({**clause, 'ai_explanation': explanation})
-    return results
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = {executor.submit(translate_one, c): i for i, c in enumerate(clauses)}
+        ordered = [None] * len(clauses)
+        for future in as_completed(futures):
+            idx = futures[future]
+            ordered[idx] = future.result()
+    return ordered
