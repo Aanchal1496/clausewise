@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Download, ChevronDown, ChevronUp, ArrowLeft, MessageSquare, Columns } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { RISK_COLORS, BACKEND_URL } from '../../utils/mockData';
+import { RISK_COLORS } from '../../utils/mockData';
 import { generatePDFReport } from '../../utils/reportGenerator';
 import './AnalysisPage.css';
 
@@ -150,34 +150,21 @@ export default function AnalysisPage() {
   setChatMessages(prev => [...prev, { role: 'assistant', text: '...' }]);
 
   try {
-    const response = await fetch(`${BACKEND_URL}/chat`, {
+    const response = await fetch('https://clausewise-clone-production.up.railway.app/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         question: userMessage,
-        clauses: analysisResult?.clauses || []
+        clauses: analysisResult?.clauses || []   // your existing context data
       })
     });
 
-    let data;
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      data = await response.json();
-    } else {
-      data = { answer: 'Unexpected response from server.' };
-    }
+    const data = await response.json();
 
-    if (!response.ok) {
-      setChatMessages(prev => [
-        ...prev.slice(0, -1),
-        { role: 'assistant', text: data.error || data.answer || 'Sorry, something went wrong on the server.' }
-      ]);
-      return;
-    }
-
+    // Replace the "..." with the real answer
     setChatMessages(prev => [
       ...prev.slice(0, -1),
-      { role: 'assistant', text: data.answer || 'No response from the server.' }
+      { role: 'assistant', text: data.answer }
     ]);
 
   } catch (err) {

@@ -145,20 +145,13 @@ def analyze_pdf():
 
     return jsonify(final)
 
-@app.errorhandler(500)
-def handle_500(e):
-    return jsonify({'error': 'Internal server error', 'detail': str(e)}), 500
-
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.get_json()
     if not data or 'question' not in data:
         return jsonify({'error': 'Send JSON with "question" and "clauses"'}), 400
-    try:
-        answer = answer_question(data['question'], data.get('clauses', []))
-        return jsonify({'answer': answer})
-    except Exception as e:
-        return jsonify({'error': 'Chat processing failed', 'detail': str(e)}), 500
+    answer = answer_question(data['question'], data.get('clauses', []))
+    return jsonify({'answer': answer})
 
 @app.route('/rag-stats')
 def rag_stats():

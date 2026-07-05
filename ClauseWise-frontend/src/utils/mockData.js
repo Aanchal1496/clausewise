@@ -69,7 +69,7 @@ export const RISK_COLORS = {
 };
 
 // ── NEW: converts your backend response → your frontend shape ─────────────────
-export const BACKEND_URL = 'https://clausewise-clone-production.up.railway.app';
+const BACKEND_URL = 'https://clausewise-clone-production.up.railway.app';
 // const BACKEND_URL = 'http://localhost:5000'
 function mapRiskLevel(backendLevel) {
   if (backendLevel === 'high') return 'unsafe';
