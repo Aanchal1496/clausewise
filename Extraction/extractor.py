@@ -56,43 +56,47 @@ def extract_clauses(pdf_input):
         else:
             return []
 
-    # 2. Pre-process text
-    text = text.replace('\xa0', ' ')
-    lines = text.split('\n')
+        # 2. Pre-process text
+        text = text.replace('\xa0', ' ')
+        lines = text.split('\n')
 
-    clauses = []
-    current_clause = None
+        clauses = []
+        current_clause = None
 
-    # 3. Split text into clauses based on headings
-    for line in lines:
-        line = line.strip()
-        if not line:
-            continue
+        # 3. Split text into clauses based on headings
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
 
-        is_new_heading = is_heading(line) or is_likely_title(line)
+            is_new_heading = is_heading(line) or is_likely_title(line)
 
-        if is_new_heading:
-            # Skip duplicate consecutive headings (empty title-only clause)
-            if current_clause is not None and current_clause['body']:
-                clauses.append(current_clause)
+            if is_new_heading:
+                # Skip duplicate consecutive headings (empty title-only clause)
+                if current_clause is not None and current_clause['body']:
+                    clauses.append(current_clause)
 
-            current_clause = {
-                'id': len(clauses) + 1,
-                'title': line,
-                'body': [],
-                'full_text': line
-            }
-        elif current_clause is not None:
-            current_clause['body'].append(line)
-            current_clause['full_text'] += ' ' + line
-        else:
-            # If no heading found yet, create an initial generic clause
-            current_clause = {
-                'id': 1,
-                'title': "Introduction / General Terms",
-                'body': [line],
-                'full_text': line
-            }
+                current_clause = {
+                    'id': len(clauses) + 1,
+                    'title': line,
+                    'body': [],
+                    'full_text': line
+                }
+            elif current_clause is not None:
+                current_clause['body'].append(line)
+                current_clause['full_text'] += ' ' + line
+            else:
+                # If no heading found yet, create an initial generic clause
+                current_clause = {
+                    'id': 1,
+                    'title': "Introduction / General Terms",
+                    'body': [line],
+                    'full_text': line
+                }
+    except Exception as e:
+        print(f"[extractor] Clause extraction error: {e}")
+        traceback.print_exc()
+        return []
 
     try:
         if current_clause is not None and current_clause['body']:
