@@ -127,12 +127,21 @@ function backendToFrontend(apiResponse, fileName) {
 }
 
 export async function analyzePDF(file) {
-  const formData = new FormData();
-  formData.append('file', file);
+  const reader = new FileReader();
+  const base64 = await new Promise((resolve, reject) => {
+    reader.onload = () => {
+      const result = reader.result;
+      const base64String = result.split(',')[1] || result;
+      resolve(base64String);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 
   const response = await fetch(`${BACKEND_URL}/analyze-pdf`, {
     method: 'POST',
-    body: formData,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pdf_base64: base64 }),
   });
 
   if (!response.ok) {
